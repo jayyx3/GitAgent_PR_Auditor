@@ -1,0 +1,11 @@
+name: "GitAgent PR Auditor"
+version: "1.0.0"
+description: "An AI-powered GitHub PR review agent that analyzes diffs for bugs, safety, and standards."
+model: "gemini-2.5-flash"
+soul: "./SOUL.md"
+rules: "./RULES.md"
+skills:
+  - name: "fetch_pr_diff"
+    description: "Retrieves the PR diff and metadata from GitHub."
+  - name: "generate_audit"
+    description: "Applies rigorous static analysis and reasoning on code diffs to construct a structured code review."

@@ -177,7 +177,7 @@ export default function GitAgentPRReviewer() {
   // Copy to clipboard notification
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-  const BACKEND_URL = "http://localhost:8000";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   // Fetch Agent specification on mount
   useEffect(() => {

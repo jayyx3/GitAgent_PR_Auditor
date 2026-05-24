@@ -101,3 +101,44 @@ async def fetch_pr_diff(owner: str, repo: str, pr_number: int, token: Optional[s
             raise HTTPException(status_code=exc.response.status_code, detail=f"Failed to fetch PR diff: {str(exc)}")
         except httpx.RequestError as exc:
             raise HTTPException(status_code=500, detail=f"Connection error to GitHub: {str(exc)}")
+
+def filter_git_diff(diff_text: str) -> str:
+    """
+    Filters a raw git diff to exclude massive lock files, binary files, and configuration files
+    that overwhelm the LLM's context window.
+    """
+    ignored_extensions = {".lock", "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "poetry.lock", "go.sum", ".png", ".jpg", ".jpeg", ".svg", ".ico"}
+    
+    # Split the diff by 'diff --git '
+    chunks = diff_text.split("diff --git ")
+    filtered_chunks = []
+    
+    # The first element before the first 'diff --git ' is usually empty or header info
+    if chunks[0].strip():
+        filtered_chunks.append(chunks[0])
+        
+    for chunk in chunks[1:]:
+        # Re-attach the separator for matching
+        full_chunk = "diff --git " + chunk
+        
+        # Extract the file path from the first line
+        lines = chunk.split("\n")
+        if not lines:
+            continue
+        first_line = lines[0]
+        
+        # First line looks like: a/path/to/file b/path/to/file
+        parts = first_line.split(" ")
+        exclude = False
+        for part in parts:
+            if part.startswith("b/"):
+                file_path = part[2:]
+                # Check if it should be ignored
+                if any(file_path.endswith(ext) or ext in file_path for ext in ignored_extensions):
+                    exclude = True
+                    break
+        
+        if not exclude:
+            filtered_chunks.append(full_chunk)
+            
+    return "\n".join(filtered_chunks)

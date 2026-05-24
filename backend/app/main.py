@@ -7,7 +7,7 @@ from typing import Dict, Any
 
 from app.config import GEMINI_API_KEY
 from app.models import PRRequest, PRReviewResponse, AgentResponse
-from app.github_client import parse_github_url, fetch_pr_data, fetch_pr_diff
+from app.github_client import parse_github_url, fetch_pr_data, fetch_pr_diff, filter_git_diff
 from app.agent_runner import load_agent_spec, run_pr_review_agent
 
 # Initialize logging
@@ -103,7 +103,8 @@ async def review_pull_request(request: PRRequest) -> PRReviewResponse:
     # 5. Run the GitAgent reasoning workflow
     logger.info("Executing GitAgent PR Auditor review pipeline...")
     try:
-        review_result = await run_pr_review_agent(diff_text, pr_metadata, api_key)
+        filtered_diff = filter_git_diff(diff_text)
+        review_result = await run_pr_review_agent(filtered_diff, pr_metadata, api_key)
         review_result.pr_metadata = pr_metadata
         logger.info("GitAgent audit review generated successfully!")
         return review_result

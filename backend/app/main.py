@@ -1,3 +1,5 @@
+import sys
+sys.set_int_max_str_digits(100000)
 import logging
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware

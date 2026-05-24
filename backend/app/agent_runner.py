@@ -134,17 +134,17 @@ Evaluate the diff carefully, line-by-line. Focus on bug detection, security, mis
             system_instruction=system_instruction
         )
         
-        # Invoke generation with Pydantic schema enforcement
+        # Invoke generation with JSON mode enabled (Pydantic schema is described in system instructions)
         response = model.generate_content(
             prompt,
             generation_config=genai.GenerationConfig(
                 response_mime_type="application/json",
-                response_schema=PRReviewResponseLLM,
                 temperature=0.2
             )
         )
         
         # Load and parse response
+        logger.info(f"LLM Raw Response: {response.text}")
         review_data = json.loads(response.text)
         
         # Post-process count calculation to ensure absolute mathematical correctness
